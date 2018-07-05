@@ -5,7 +5,7 @@
 # this script assumes its being run on CentOS Linux 7/x86_64
 
 set -u
-set -e
+# set -e
 
 # # Source build variables
 # cat jenkins-env | grep -e RHCHEBOT_DOCKER_HUB_PASSWORD -e DEVSHIFT > inherit-env
@@ -17,18 +17,18 @@ set -e
 
 # systemctl start docker
 
-exit_with_error="no"
+exit_with_error=""
 git_tag=$(git rev-parse --short HEAD)
 
-for d in recipes/*/ ; do
+for d in recipes/dockerfiles/* ; do
   image=$(basename $d)
 
   echo "Building $image"
-  docker build -t ${image} -f ${d}/Dockerfile ./context
+  docker build -t ${image} -f ${d}/Dockerfile ./recipes
   if [ $? -ne 0 ]; then
     echo 'ERROR: Docker build failed'
-    exit_with_error="yes"
-    exit -1
+    exit_with_error=$exit_with_error"\nFailed to Build ${image} "
+    continue
   fi
   echo 'Image built successfully'
 
@@ -59,3 +59,5 @@ for d in recipes/*/ ; do
   # done
 
 done
+
+echo -e $exit_with_error
