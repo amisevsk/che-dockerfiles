@@ -15,19 +15,19 @@ ENV JAVA_HOME=/usr/lib/jvm/java-${JAVA_VERSION}
 
 # Install general dependencies
 COPY ["./context/general-deps.install", "/tmp/install/"]
-RUN sudo chown user:user /tmp/install/* && \
+RUN sudo chown user:user -R /tmp/install && \
     /tmp/install/general-deps.install ${OC_VERSION} && \
     sudo rm -rf /tmp/install
 
 # Install nss_wrapper
 COPY ["./context/nss_wrapper.install", "/tmp/install/"]
-RUN sudo chown user:user /tmp/install/* && \
+RUN sudo chown user:user -R /tmp/install && \
     /tmp/install/nss_wrapper.install && \
     sudo rm -rf /tmp/install
 
 # Give write access to /home/user for users with an arbitrary UID
 COPY ["./context/grant-access-arbitrary-UID.sh", "/tmp/install/"]
-RUN sudo chown user:user /tmp/install/* && \
+RUN sudo chown user:user -R /tmp/install && \
     /tmp/install/grant-access-arbitrary-UID.sh && \
     sudo rm -rf /tmp/install
 
