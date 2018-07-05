@@ -37,7 +37,7 @@ RUN sudo apt-get update && \
 COPY ["./context/grant-access-arbitrary-UID.sh", "/tmp/install/"]
 RUN sudo chown user:user /tmp/install/* && \
     /tmp/install/grant-access-arbitrary-UID.sh && \
-    rm -rf /tmp/install
+    sudo rm -rf /tmp/install
   
 # Generate passwd.template
 RUN cat /etc/passwd | \

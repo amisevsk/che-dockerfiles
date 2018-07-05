@@ -16,25 +16,25 @@ RUN sudo yum list installed
 COPY ["./context/general-deps.install", "/tmp/install/"]
 RUN sudo chown user:user /tmp/install/* && \
     /tmp/install/general-deps.install ${OC_VERSION} && \
-    rm -rf /tmp/install
+    sudo rm -rf /tmp/install
 
 # Install nss_wrapper
 COPY ["./context/nss_wrapper.install", "/tmp/install/"]
 RUN sudo chown user:user /tmp/install/* && \
     /tmp/install/nss_wrapper.install && \
-    rm -rf /tmp/install
+    sudo rm -rf /tmp/install
 
 # Install nodejs
 COPY ["./context/nodejs.install", "/tmp/install/"]
 RUN sudo chown user:user /tmp/install/* && \
     /tmp/install/nodejs.install && \
-    rm -rf /tmp/install
+    sudo rm -rf /tmp/install
 
 # Give write access to /home/user for users with an arbitrary UID
 COPY ["./context/grant-access-arbitrary-UID.sh", "/tmp/install/"]
 RUN sudo chown user:user /tmp/install/* && \
     /tmp/install/grant-access-arbitrary-UID.sh && \
-    rm -rf /tmp/install
+    sudo rm -rf /tmp/install
 
 # The following lines are needed to set the correct locale after `yum update`
 # c.f. https://github.com/CentOS/sig-cloud-instance-images/issues/71
@@ -69,4 +69,4 @@ RUN sudo chown user:user /tmp/maven-deps/* && \
         # 'configmap' \
         'health-check' \
         'rest-http' && \
-    rm -rf /tmp/maven-deps
+    sudo rm -rf /tmp/maven-deps
