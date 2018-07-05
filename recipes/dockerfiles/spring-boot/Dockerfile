@@ -6,29 +6,27 @@
 # Contributors:
 # Red Hat, Inc. - initial implementation
 
-FROM registry.centos.org/che-stacks/wildfly-swarm
+FROM registry.centos.org/che-stacks/spring-boot
 
 ARG OC_VERSION=3.6.173.0.30
 
-RUN sudo yum list installed
-
 # Install general dependencies
-COPY --chown=user:user ["./general-deps.install", "/tmp/install/"]
+COPY --chown=user:user ["./context/general-deps.install", "/tmp/install/"]
 RUN /tmp/install/general-deps.install ${OC_VERSION} && \
     rm -rf /tmp/install
 
 # Install nss_wrapper
-COPY --chown=user:user ["./nss_wrapper.install", "/tmp/install/"]
+COPY --chown=user:user ["./context/nss_wrapper.install", "/tmp/install/"]
 RUN /tmp/install/nss_wrapper.install && \
     rm -rf /tmp/install
 
 # Install nodejs
-COPY --chown=user:user ["./nodejs.install", "/tmp/install/"]
+COPY --chown=user:user ["./context/nodejs.install", "/tmp/install/"]
 RUN /tmp/install/nodejs.install && \
     rm -rf /tmp/install
 
 # Give write access to /home/user for users with an arbitrary UID
-COPY --chown=user:user ["./grant-access-arbitrary-UID.sh", "/tmp/install/"]
+COPY --chown=user:user ["./context/grant-access-arbitrary-UID.sh", "/tmp/install/"]
 RUN /tmp/install/grant-access-arbitrary-UID.sh && \
     rm -rf /tmp/install
 
@@ -50,18 +48,19 @@ RUN cat /etc/group | \
 ENV HOME /home/user
 
 # Overwride entrypoint
-COPY ["entrypoint.sh","/home/user/entrypoint.sh"]
+COPY ["./context/entrypoint.sh","/home/user/entrypoint.sh"]
 ENTRYPOINT ["/home/user/entrypoint.sh"]
 CMD tail -f /dev/null
 
 # Download maven dependencies
-COPY --chown=user:user ["download-maven-deps.sh", \
-                        "maven-deps.install", \
+COPY --chown=user:user ["./context/download-maven-deps.sh", \
+                        "./context/maven-deps.install", \
                         "/tmp/maven-deps/"]
 ADD https://api.github.com/repos/openshiftio/booster-catalog/git/refs/tags/v10 /tmp/current-osio-sha1
-RUN /tmp/maven-deps/maven-deps.install \
-        'wildfly-swarm' \
-        # 'configmap' \
+RUN sudo chown user:user /tmp/maven-deps/* && \
+    /tmp/maven-deps/maven-deps.install \
+        'spring-boot' \
+        'configmap' \
         'health-check' \
         'rest-http' && \
     rm -rf /tmp/maven-deps

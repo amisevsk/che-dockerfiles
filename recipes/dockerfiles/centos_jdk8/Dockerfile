@@ -6,35 +6,39 @@
 # Contributors:
 # Red Hat, Inc. - initial implementation
 
-FROM registry.centos.org/che-stacks/spring-boot
+FROM eclipse/centos_jdk8
 
 ARG OC_VERSION=3.6.173.0.30
 
 # Install general dependencies
-COPY --chown=user:user ["./general-deps.install", "/tmp/install/"]
-RUN /tmp/install/general-deps.install ${OC_VERSION} && \
+COPY ["./context/general-deps.install", "/tmp/install/"]
+RUN sudo chown user:user /tmp/install/* && \
+    /tmp/install/general-deps.install ${OC_VERSION} && \
     rm -rf /tmp/install
 
 # Install nss_wrapper
-COPY --chown=user:user ["./nss_wrapper.install", "/tmp/install/"]
-RUN /tmp/install/nss_wrapper.install && \
+COPY ["./context/nss_wrapper.install", "/tmp/install/"]
+RUN sudo chown user:user /tmp/install/* && \
+    /tmp/install/nss_wrapper.install && \
     rm -rf /tmp/install
 
 # Install nodejs
-COPY --chown=user:user ["./nodejs.install", "/tmp/install/"]
-RUN /tmp/install/nodejs.install && \
+COPY ["./context/nodejs.install", "/tmp/install/"]
+RUN sudo chown user:user /tmp/install/* && \
+    /tmp/install/nodejs.install && \
     rm -rf /tmp/install
 
 # Give write access to /home/user for users with an arbitrary UID
-COPY --chown=user:user ["./grant-access-arbitrary-UID.sh", "/tmp/install/"]
-RUN /tmp/install/grant-access-arbitrary-UID.sh && \
+COPY ["./context/grant-access-arbitrary-UID.sh", "/tmp/install/"]
+RUN sudo chown user:user /tmp/install/* && \
+    /tmp/install/grant-access-arbitrary-UID.sh && \
     rm -rf /tmp/install
 
 # The following lines are needed to set the correct locale after `yum update`
 # c.f. https://github.com/CentOS/sig-cloud-instance-images/issues/71
 RUN sudo localedef -i en_US -f UTF-8 C.UTF-8
 ENV LANG="C.UTF-8"
-
+  
 # Generate passwd.template
 RUN cat /etc/passwd | \
     sed s#user:x.*#user:x:\${USER_ID}:\${GROUP_ID}::\${HOME}:/bin/bash#g \
@@ -48,18 +52,6 @@ RUN cat /etc/group | \
 ENV HOME /home/user
 
 # Overwride entrypoint
-COPY ["entrypoint.sh","/home/user/entrypoint.sh"]
+COPY ["./context/entrypoint.sh", "/home/user/entrypoint.sh"]
 ENTRYPOINT ["/home/user/entrypoint.sh"]
 CMD tail -f /dev/null
-
-# Download maven dependencies
-COPY --chown=user:user ["download-maven-deps.sh", \
-                        "maven-deps.install", \
-                        "/tmp/maven-deps/"]
-ADD https://api.github.com/repos/openshiftio/booster-catalog/git/refs/tags/v10 /tmp/current-osio-sha1
-RUN /tmp/maven-deps/maven-deps.install \
-        'spring-boot' \
-        'configmap' \
-        'health-check' \
-        'rest-http' && \
-    rm -rf /tmp/maven-deps

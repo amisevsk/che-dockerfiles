@@ -51,4 +51,4 @@ RUN cat /etc/group | \
 ENV HOME /home/user
 
 # Overwride entrypoint
-COPY ["entrypoint.sh","/home/user/entrypoint.sh"]
+COPY ["./context/entrypoint.sh","/home/user/entrypoint.sh"]
