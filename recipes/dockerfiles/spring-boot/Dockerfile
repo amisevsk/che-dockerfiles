@@ -53,9 +53,9 @@ ENTRYPOINT ["/home/user/entrypoint.sh"]
 CMD tail -f /dev/null
 
 # Download maven dependencies
-COPY --chown=user:user ["./context/download-maven-deps.sh", \
-                        "./context/maven-deps.install", \
-                        "/tmp/maven-deps/"]
+COPY ["./context/download-maven-deps.sh", \
+      "./context/maven-deps.install", \
+      "/tmp/maven-deps/"]
 ADD https://api.github.com/repos/openshiftio/booster-catalog/git/refs/tags/v10 /tmp/current-osio-sha1
 RUN sudo chown user:user /tmp/maven-deps/* && \
     /tmp/maven-deps/maven-deps.install \
