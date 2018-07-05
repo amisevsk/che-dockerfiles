@@ -11,23 +11,27 @@ FROM registry.centos.org/che-stacks/spring-boot
 ARG OC_VERSION=3.6.173.0.30
 
 # Install general dependencies
-COPY --chown=user:user ["./context/general-deps.install", "/tmp/install/"]
-RUN /tmp/install/general-deps.install ${OC_VERSION} && \
+COPY ["./context/general-deps.install", "/tmp/install/"]
+RUN sudo chown user:user /tmp/install/* && \
+    /tmp/install/general-deps.install ${OC_VERSION} && \
     rm -rf /tmp/install
 
 # Install nss_wrapper
-COPY --chown=user:user ["./context/nss_wrapper.install", "/tmp/install/"]
-RUN /tmp/install/nss_wrapper.install && \
+COPY ["./context/nss_wrapper.install", "/tmp/install/"]
+RUN sudo chown user:user /tmp/install/* && \
+    /tmp/install/nss_wrapper.install && \
     rm -rf /tmp/install
 
 # Install nodejs
-COPY --chown=user:user ["./context/nodejs.install", "/tmp/install/"]
-RUN /tmp/install/nodejs.install && \
+COPY ["./context/nodejs.install", "/tmp/install/"]
+RUN sudo chown user:user /tmp/install/* && \
+    /tmp/install/nodejs.install && \
     rm -rf /tmp/install
 
 # Give write access to /home/user for users with an arbitrary UID
-COPY --chown=user:user ["./context/grant-access-arbitrary-UID.sh", "/tmp/install/"]
-RUN /tmp/install/grant-access-arbitrary-UID.sh && \
+COPY ["./context/grant-access-arbitrary-UID.sh", "/tmp/install/"]
+RUN sudo chown user:user /tmp/install/* && \
+    /tmp/install/grant-access-arbitrary-UID.sh && \
     rm -rf /tmp/install
 
 # The following lines are needed to set the correct locale after `yum update`

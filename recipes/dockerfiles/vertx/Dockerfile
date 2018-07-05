@@ -33,6 +33,7 @@ COPY ["./context/grant-access-arbitrary-UID.sh", "/tmp/install/"]
 RUN sudo chown user:user /tmp/install/* && \
     /tmp/install/grant-access-arbitrary-UID.sh && \
     rm -rf /tmp/install
+    
 # The following lines are needed to set the correct locale after `yum update`
 # c.f. https://github.com/CentOS/sig-cloud-instance-images/issues/71
 RUN sudo localedef -i en_US -f UTF-8 C.UTF-8
