@@ -18,6 +18,7 @@ set -u
 # systemctl start docker
 
 exit_with_error=""
+error_result=0
 git_tag=$(git rev-parse --short HEAD)
 
 for d in recipes/dockerfiles/* ; do
@@ -60,4 +61,7 @@ for d in recipes/dockerfiles/* ; do
 
 done
 
-echo -e $exit_with_error
+if [ "$exit_with_error" != "" ]; then
+  echo -e $exit_with_error
+  exit 1
+fi
