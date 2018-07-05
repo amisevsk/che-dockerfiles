@@ -7,15 +7,15 @@
 set -u
 set -e
 
-# Source build variables
-cat jenkins-env | grep -e RHCHEBOT_DOCKER_HUB_PASSWORD -e DEVSHIFT > inherit-env
-. inherit-env
+# # Source build variables
+# cat jenkins-env | grep -e RHCHEBOT_DOCKER_HUB_PASSWORD -e DEVSHIFT > inherit-env
+# . inherit-env
 
-# Update machine, get required deps in place
-yum -y update
-yum -y install docker git
+# # Update machine, get required deps in place
+# yum -y update
+# yum -y install docker git
 
-systemctl start docker
+# systemctl start docker
 
 exit_with_error="no"
 git_tag=$(git rev-parse --short HEAD)
@@ -28,34 +28,34 @@ for d in recipes/*/ ; do
   if [ $? -ne 0 ]; then
     echo 'ERROR: Docker build failed'
     exit_with_error="yes"
-    continue
+    exit -1
   fi
   echo 'Image built successfully'
 
-  # Pushing to DockerHub
-  docker login -u rhchebot -p $RHCHEBOT_DOCKER_HUB_PASSWORD -e noreply@redhat.com
+  # # Pushing to DockerHub
+  # docker login -u rhchebot -p $RHCHEBOT_DOCKER_HUB_PASSWORD -e noreply@redhat.com
 
-  declare -a tags_dockerhub=(rhche/${image}:latest
-                             rhche/${image}:${git_tag})
+  # declare -a tags_dockerhub=(rhche/${image}:latest
+  #                            rhche/${image}:${git_tag})
 
-  for new_tag in "${tags_dockerhub[@]}"; do
-    echo "Tagging ${new_tag}"
-    docker tag ${image}:latest ${new_tag}
-    echo "Pushing ${new_tag}"
-    docker push ${new_tag}
-  done
+  # for new_tag in "${tags_dockerhub[@]}"; do
+  #   echo "Tagging ${new_tag}"
+  #   docker tag ${image}:latest ${new_tag}
+  #   echo "Pushing ${new_tag}"
+  #   docker push ${new_tag}
+  # done
 
-  # Pushing to 'push.registry.devshift.net'
-  docker login -u $DEVSHIFT_USERNAME -p $DEVSHIFT_PASSWORD push.registry.devshift.net
+  # # Pushing to 'push.registry.devshift.net'
+  # docker login -u $DEVSHIFT_USERNAME -p $DEVSHIFT_PASSWORD push.registry.devshift.net
 
-  declare -a tags_devshift=(push.registry.devshift.net/che/${image}:latest
-                            push.registry.devshift.net/che/${image}:${git_tag})
+  # declare -a tags_devshift=(push.registry.devshift.net/che/${image}:latest
+  #                           push.registry.devshift.net/che/${image}:${git_tag})
 
-  for new_tag in "${tags_devshift[@]}"; do
-    echo "Tagging ${new_tag}"
-    docker tag ${image}:latest ${new_tag}
-    echo "Pushing ${new_tag}"
-    docker push ${new_tag}
-  done
+  # for new_tag in "${tags_devshift[@]}"; do
+  #   echo "Tagging ${new_tag}"
+  #   docker tag ${image}:latest ${new_tag}
+  #   echo "Pushing ${new_tag}"
+  #   docker push ${new_tag}
+  # done
 
 done
