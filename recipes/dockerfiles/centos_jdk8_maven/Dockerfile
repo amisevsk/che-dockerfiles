@@ -8,14 +8,11 @@
 
 FROM quay.io/openshiftio/che-stack-base
 
-ENV MAVEN_VERSION=3.6.0
-ENV GRADLE_HOME=/opt/gradle
-
 # Install OpenJDK and Maven
 RUN sudo yum upgrade -y -d 1 \
   && sudo yum install -y -d 1 \
     java-1.8.0-openjdk-devel \
-    rh-maven33 \
+    rh-maven35 \
   && sudo yum clean all \
   && sudo rm -rf /tmp/* /var/cache/yum \
   && cat /opt/rh/rh-maven33/enable >> /home/user/.bashrc
