@@ -7,6 +7,40 @@
 set -u
 set -e
 
+function push_dockerhub() {
+  image=$1
+  docker login -u rhchebot -p $RHCHEBOT_DOCKER_HUB_PASSWORD -e noreply@redhat.com
+
+  declare -a tags_dockerhub=(rhche/${image}:latest
+                             rhche/${image}:${git_tag})
+
+  for new_tag in "${tags_dockerhub[@]}"; do
+    echo "Tagging ${new_tag}"
+    docker tag ${image}:latest ${new_tag}
+    echo "Pushing ${new_tag}"
+    docker push ${new_tag} | cat
+  done
+}
+
+function push_quay() {
+  image=$1
+  if [ -n "${QUAY_USERNAME}" -a -n "${QUAY_PASSWORD}" ]; then
+    docker login -u ${QUAY_USERNAME} -p ${QUAY_PASSWORD} quay.io
+  else
+    echo "Could not login, missing credentials for the registry"
+  fi
+
+  declare -a tags_quay=(quay.io/openshiftio/che-${image}:latest
+                            quay.io/openshiftio/che-${image}:${git_tag})
+
+  for new_tag in "${tags_quay[@]}"; do
+    echo "Tagging ${new_tag}"
+    docker tag ${image}:latest ${new_tag}
+    echo "Pushing ${new_tag}"
+    docker push ${new_tag} | cat
+  done
+}
+
 # Source build variables
 cat jenkins-env | grep -e RHCHEBOT_DOCKER_HUB_PASSWORD -e DEVSHIFT -e QUAY > inherit-env
 . inherit-env
@@ -32,34 +66,6 @@ for d in recipes/dockerfiles/*/ ; do
   fi
   echo 'Image built successfully'
 
-  # Pushing to DockerHub
-  docker login -u rhchebot -p $RHCHEBOT_DOCKER_HUB_PASSWORD -e noreply@redhat.com
-
-  declare -a tags_dockerhub=(rhche/${image}:latest
-                             rhche/${image}:${git_tag})
-
-  for new_tag in "${tags_dockerhub[@]}"; do
-    echo "Tagging ${new_tag}"
-    docker tag ${image}:latest ${new_tag}
-    echo "Pushing ${new_tag}"
-    docker push ${new_tag} | cat
-  done
-
-  # Pushing to 'quay.io'
-  if [ -n "${QUAY_USERNAME}" -a -n "${QUAY_PASSWORD}" ]; then
-    docker login -u ${QUAY_USERNAME} -p ${QUAY_PASSWORD} quay.io
-  else
-    echo "Could not login, missing credentials for the registry"
-  fi
-
-  declare -a tags_quay=(quay.io/openshiftio/che-${image}:latest
-                            quay.io/openshiftio/che-${image}:${git_tag})
-
-  for new_tag in "${tags_quay[@]}"; do
-    echo "Tagging ${new_tag}"
-    docker tag ${image}:latest ${new_tag}
-    echo "Pushing ${new_tag}"
-    docker push ${new_tag} | cat
-  done
-
+  push_dockerhub $image
+  push_quay $image
 done
