@@ -54,6 +54,13 @@ systemctl start docker
 exit_with_error="no"
 git_tag=$(git rev-parse --short HEAD)
 
+image=stack-base
+echo "Building $image"
+docker build -t ${image} -f ./recipes/base/Dockerfile ./recipes
+echo "Image built successfully"
+push_dockerhub $image
+push_quay $image
+
 for d in recipes/dockerfiles/*/ ; do
   image=$(basename $d)
 
